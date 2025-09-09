@@ -1,0 +1,152 @@
+package Principal;
+
+import java.util.Scanner;
+
+public class Main {
+
+	// variaveis globais -> todos os métodos possuem acesso
+	public static double saldoUsuario = 0.0;
+	public static double limiteDiario = 500.0;
+	public static double quantiaAtualSacada = 0;
+	public static String senhaUsuario = "";
+
+	public static void main(String[] args) {
+		Scanner scanner = new Scanner(System.in);
+
+		cadastrarSenha(scanner);
+
+		if (autenticarUsuario(scanner)) {
+			// loop principal caso o usuario esteja autenticado
+			exibirMenu(scanner);
+		} else {
+			// mensagem de erro
+			System.out.println("Erro na autenticação do usuário. Tente novamente mais tarde");
+		}
+
+		scanner.close();
+	}
+
+	public static void cadastrarSenha(Scanner scanner) {
+		while (senhaUsuario.length() != 3) {
+			System.out.println("-------------------------------------------------------");
+			System.out.print("Defina a senha da sua conta (3 digitos numéricos): ");
+			String novaSenha = scanner.nextLine();
+			if (validaSenha(novaSenha)) {
+				senhaUsuario = novaSenha;
+			} else {
+				System.out.println("Sua senha deve ter 3 caracteres!! Apenas números");
+			}
+		}
+		System.out.println("--------------------------------------------------------");
+	}
+
+	public static boolean autenticarUsuario(Scanner scanner) {
+		// entrada do usuario
+
+		System.out.println("---------CAIXA ELETRONICO---------");
+		for (int i = 1; i <= 3; i++) {
+			System.out.print("Digite sua senha: ");
+
+			String senhaDigitada = scanner.nextLine();
+
+			if (senhaDigitada.equals(senhaUsuario)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static void exibirMenu(Scanner scanner) {
+		int escolhaUsuario = 0; // inicializando para rodar o loop
+		while (escolhaUsuario != 4) {
+			System.out.println("----------MENU----------");
+			System.out.println("1 - Consultar saldo");
+			System.out.println("2 - Depositar dinheiro");
+			System.out.println("3 - Sacar dinheiro");
+			System.out.println("4 - Sair");
+			System.out.println("------------------------");
+			System.out.print("# Ação: ");
+
+			escolhaUsuario = scanner.nextInt();
+
+			switch (escolhaUsuario) {
+			case 1:
+				consultarSaldo();
+				break;
+			case 2:
+				depositar(scanner);
+				break;
+			case 3:
+				sacar(scanner);
+				break;
+			case 4:
+				System.out.println("Execução encerrada!");
+				break;
+			default:
+				System.out.println("Ação inválida.");
+				break;
+			}
+
+		}
+
+	}
+
+	public static void consultarSaldo() {
+
+		System.out.println("Seu saldo atual: R$" + String.format("%.2f", saldoUsuario));
+
+		double limiteDisponivel = limiteDiario - quantiaAtualSacada;
+
+		System.out.println("Limite atual para saque: R$" + String.format("%.2f", limiteDisponivel));
+	}
+
+	public static void depositar(Scanner scanner) {
+		System.out.print("Valor a depositar: R$");
+		double depositar = scanner.nextDouble();
+
+		// validação do valor informado pelo usuário
+		if (depositar <= 0) {
+			System.out.println("Quantia inválida. Tente novamente.");
+			return;
+		}
+
+		saldoUsuario += depositar;
+		System.out.println("Saldo atual pós deposito: R$" + String.format("%.2f", saldoUsuario));
+	}
+
+	public static void sacar(Scanner scanner) {
+		System.out.print("Quantia a sacar: ");
+		double saque = scanner.nextDouble();
+
+		// validação
+
+		if (quantiaAtualSacada >= limiteDiario) {
+			System.out.println("Você atingiu o limite diário de saque. Volte amanhã");
+			return;
+		}
+
+		if (saque > saldoUsuario || saque <= 0) {
+			System.out.println("Saldo insuficiente.\nSaldo disponivel: "  + String.format("%.2f", saldoUsuario));
+			return;
+		}
+
+		if (quantiaAtualSacada + saque > 500) {
+			System.out.println("A quantia atual ultrapassa o limite diário de saque. Tente novamente com um valor menor");
+			return;
+		}
+
+		saldoUsuario -= saque;
+		quantiaAtualSacada += saque;
+		System.out.println("Saldo atual pós saque: R$" + String.format("%.2f", saldoUsuario));
+	}
+
+	public static boolean validaSenha(String senha) {
+		// professor, utilizamos uma regex aqui para validar a senha
+		// ela checa se a string digitada possui somente números, impossibilitando o
+		// usuário de cadastrar
+		// uma senha com caracteres diferentes de números
+		// também só aceita senhas de 3 digitos
+		return (senha.length() == 3 && senha.matches("[+-]?\\d*(\\.\\d+)?"));
+	}
+}
+
